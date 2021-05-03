@@ -42,17 +42,17 @@ def read_cards(source_file):
             yield (value, card[1])
 
 
+def chunk(iterable, chunk_size):
+    iterator = iter(iterable)
+    while chunk := list(islice(iterator, chunk_size)):
+        yield chunk
+
+
 def read_hand(cards):
     """
     Generator which groups cards into sorted hands of five
     """
-    hand = []
-    for card in cards:
-        hand.append(card)
-        if len(hand) >= 5:
-            hand.sort(reverse=True)
-            yield hand
-            hand = []
+    yield from (sorted(hand, reverse=True) for hand in chunk(cards, 5))
 
 
 class HandRater:
@@ -155,6 +155,18 @@ if __name__ == "__main__":
             fh = sys.stdin
         else:
             fh = stack.enter_context(open(target))
-        for hand in read_hand(read_cards(fh)):
-            print(f"Hand: {hand!r}")
-            print(f"Value: {HandRater.rate_hand(hand)!r}")
+        games_won = {
+            "Player 1": 0,
+            "Player 2": 0,
+        }
+        for player_1, player_2 in chunk(
+            (HandRater.rate_hand(hand) for hand in read_hand(read_cards(fh))), 2
+        ):
+            winner = "Player 1" if player_1 > player_2 else "Player 2"
+            print(f"Winner is {winner}: {player_1!r} vs {player_2!r}")
+            games_won[winner] += 1
+        print(
+            "Player 1 won {Player 1} games, Player 2 won {Player 2} games".format(
+                **games_won
+            )
+        )
