@@ -5,6 +5,8 @@ Author: Joe Taylor, Scott Vaughan
 
 A script to read in a series of cards, group into two hands of five, and output which hand
 would win if scored by standard poker rules.
+
+Written to solve https://projecteuler.net/problem=54
 """
 
 from collections import Counter
